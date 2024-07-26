@@ -24,4 +24,10 @@ contract DepositorTest is Test {
 
         depositor = new Depositor(address(portal), ConfLevel.Latest, accountant, tokenA, tokenB);
     }
+
+    function testInit() public view {
+        assertEq(address(depositor.accountant()), accountant);
+        assertEq(address(depositor.tokenA()), tokenA);
+        assertEq(address(depositor.tokenB()), tokenB);
+    }
 }
