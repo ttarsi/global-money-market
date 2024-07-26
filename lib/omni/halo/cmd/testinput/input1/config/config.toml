@@ -1,7 +1,0 @@
-moniker = "config.toml"
-
-[rpc]
-laddr = ":1234"
-
-[consensus]
-timeout_commit = "99s"
