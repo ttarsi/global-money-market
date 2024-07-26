@@ -11,12 +11,17 @@ import {ConfLevel} from "omni/core/src/libraries/ConfLevel.sol";
 contract DepositorTest is Test {
     Depositor depositor;
     MockPortal portal;
-    
+
     address accountant;
+    address tokenA;
+    address tokenB;
 
     function setUp() public {
-        accountant = address(0x123);
         portal = new MockPortal();
-        depositor = new Depositor(accountant, address(portal), ConfLevel.Latest);
+        accountant = address(0x123);
+        tokenA = address(0x456);
+        tokenB = address(0x789);
+
+        depositor = new Depositor(address(portal), ConfLevel.Latest, accountant, tokenA, tokenB);
     }
 }

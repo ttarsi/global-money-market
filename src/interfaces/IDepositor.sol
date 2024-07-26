@@ -2,5 +2,9 @@
 pragma solidity ^0.8.23;
 
 interface IDepositor {
-    function greet(string calldata _greeting) external;
+    event TokenALent(address user, uint256 amount);
+    event TokenBLent(address user, uint256 amount);
+
+    function lendTokenA(uint256 amount) external;
+    function lendTokenB(uint256 amount) external;
 }
