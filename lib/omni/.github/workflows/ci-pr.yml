@@ -1,0 +1,28 @@
+name: ci pr
+# continuous integration on pull requests to main and release branches
+
+on:
+  pull_request:
+    branches:
+      - main
+      - release/**
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  pre-commit:
+    uses: ./.github/workflows/pre-commit.yml
+  go-tests:
+    uses: ./.github/workflows/gotest.yml
+  go-lint:
+    uses: ./.github/workflows/golangci-lint.yml
+  cli-install:
+    uses: ./.github/workflows/cliinstall.yml
+  cli-command:
+    uses: ./.github/workflows/clicommand.yml
+  sol-tests:
+    uses: ./.github/workflows/soltest.yml
+  e2e-tests:
+    uses: ./.github/workflows/pr-e2etest.yml

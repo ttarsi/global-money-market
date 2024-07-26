@@ -1,0 +1,50 @@
+name: solidity tests
+# Run this separately from pre-commit for nice visual coverage.
+
+on:
+  workflow_call:
+
+jobs:
+  sol_core_tests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: contracts/core
+    steps:
+      - uses: actions/checkout@v4
+      - uses: foundry-rs/foundry-toolchain@v1
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: contracts/core/package.json
+      - run: pnpm install
+      - name: Check fmt
+        run: forge fmt --check
+      - name: Run tests
+        run: forge test -vv
+      - name: Check snapshot
+        # fuzz tests snapshots are different in CI, so we ignore them
+        run: forge snapshot --check --tolerance 5
+        env:
+            FOUNDRY_FUZZ_SEED: "0x6eed"
+
+  sol_avs_tests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: contracts/avs
+    steps:
+      - uses: actions/checkout@v4
+      - uses: foundry-rs/foundry-toolchain@v1
+      - uses: pnpm/action-setup@v2
+        with:
+          package_json_file: contracts/avs/package.json
+      - run: pnpm install
+      - name: Check fmt
+        run: forge fmt --check
+      - name: Run tests
+        run: forge test -vv
+      - name: Check snapshot
+        # fuzz tests snapshots are different in CI, so we ignore them
+        run: forge snapshot --check --tolerance 5 --no-match-test testFuzz_syncWithOmni
+        env:
+            FOUNDRY_FUZZ_SEED: "0x6eed"

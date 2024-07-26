@@ -1,0 +1,5 @@
+network = "mainnet"
+public_chains = ["ethereum"]
+
+only_monitor = true
+prometheus   = true

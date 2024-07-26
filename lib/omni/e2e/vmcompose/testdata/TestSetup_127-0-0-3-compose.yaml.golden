@@ -1,0 +1,44 @@
+version: '2.4'
+networks:
+  test:
+    labels:
+      e2e: true
+    driver: bridge
+
+services:
+  mock_l1:
+    labels:
+      e2e: true
+    container_name: mock_l1
+    platform: linux/amd64
+    image: omniops/anvilproxy:7d1ae53
+    environment:
+      - ANVILPROXY_CHAIN_ID=1652
+      - ANVILPROXY_BLOCK_TIME=1
+      - ANVILPROXY_SLOTS_IN_AN_EPOCH=4 # Finality in 4*2*BlockPeriod
+      - FORKPROXY_LOAD_STATE=/anvil/state.json
+    ports:
+      - 8545:8545
+    networks:
+      test:
+        
+    
+    volumes:
+      - ./anvil/state.json:/anvil/state.json
+    
+
+  # Use geth as the omni EVMs.
+  relayer:
+    labels:
+      e2e: true
+    container_name: relayer
+    image: omniops/relayer:7d1ae53
+    restart: unless-stopped # Restart on crash to mitigate startup race issues
+    ports:
+      - 26660 # Prometheus and pprof
+    volumes:
+      - ./relayer:/relayer
+    networks:
+      test:
+        
+

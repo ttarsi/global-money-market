@@ -1,0 +1,2 @@
+623ab30714ecfc8a0c0da0227a1b5bd9cf5b3d8b@seed01.omega.omni.network:26656
+7582e893545ecdc8d43402198ccb9100584973b6@seed02.omega.omni.network:26656

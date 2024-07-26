@@ -1,0 +1,142 @@
+version: '2.4'
+networks:
+  {{ .NetworkName }}:
+    labels:
+      e2e: true
+    driver: bridge
+    {{- if .Network }}
+    ipam:
+      driver: default
+      config:
+      - subnet: {{ .NetworkCIDR }}
+    {{- end }}
+
+services:
+{{- range .Nodes }}
+  {{ .Name }}:
+    labels:
+      e2e: true
+    container_name: {{ .Name }}
+    image: {{ .Version }}
+    init: true
+    ports:
+    - {{ if $.BindAll }}26656:{{end}}26656 # Consensus P2P
+    - {{ if .ProxyPort }}{{ .ProxyPort }}:{{ end }}26657 # Consensus RPC
+{{- if .PrometheusProxyPort }}
+    - {{ .PrometheusProxyPort }}:26660 # Prometheus
+{{- end }}
+    - 6060 # Pprof
+    volumes:
+    - ./{{ .Name }}:/halo
+    networks:
+      {{ $.NetworkName }}:
+        {{ if $.Network }}ipv4_address: {{ .InternalIP }}{{ end }}
+{{end}}
+
+{{- range .Anvils }}
+  {{ .Chain.Name }}:
+    labels:
+      e2e: true
+    container_name: {{ .Chain.Name }}
+    platform: linux/amd64
+    image: omniops/anvilproxy:{{or $.OmniTag "main"}}
+    environment:
+      - ANVILPROXY_CHAIN_ID={{ .Chain.ChainID }}
+      - ANVILPROXY_BLOCK_TIME={{.Chain.BlockPeriod.Seconds}}
+      - ANVILPROXY_SLOTS_IN_AN_EPOCH=4 # Finality in 4*2*BlockPeriod
+      {{ if .LoadState }}- FORKPROXY_LOAD_STATE=/anvil/state.json{{ end }}
+    ports:
+      - {{ if .ProxyPort }}{{ .ProxyPort }}:{{ end }}8545
+    networks:
+      {{ $.NetworkName }}:
+        {{ if $.Network }}ipv4_address: {{ .InternalIP }}{{ end }}
+    {{ if .LoadState }}
+    volumes:
+      - {{ .LoadState }}:/anvil/state.json
+    {{ end }}
+{{- end}}
+
+  # Use geth as the omni EVMs.
+{{- range .OmniEVMs }}
+  {{ .InstanceName }}:
+    labels:
+      e2e: true
+    container_name: {{ .InstanceName }}
+    image: "ethereum/client-go:{{ $.GethTag }}"
+    command:
+      - --config=/geth/config.toml
+      # Flags not available via config.toml
+      - --nat=extip:{{ .AdvertisedIP }}
+      - --pprof
+      - --pprof.addr=0.0.0.0
+      - --metrics
+      - --graphql
+      {{ if .IsArchive }}- --gcmode=archive{{ end }}
+    ports:
+      - {{ if $.BindAll }}8551:{{end}}8551 # Auth RPC
+      - {{ if .ProxyPort }}{{ .ProxyPort }}:{{ end }}8545 # HTTP RPC
+      - {{ if $.BindAll }}30303:{{end}}30303 # Execution P2P
+      - {{ if $.BindAll }}8546:{{end}}8546 # Websockets RPC
+      - 6060 # Prometheus metrics and pprof
+    healthcheck:
+      test: "nc -z localhost 8545"
+      interval: 1s
+      retries: 30
+    volumes:
+      - ./{{ .InstanceName }}:/geth
+    networks:
+      {{ $.NetworkName }}:
+        {{ if $.Network }}ipv4_address: {{ .AdvertisedIP }}{{ end }}
+{{end}}
+
+{{- if .Relayer }}
+  relayer:
+    labels:
+      e2e: true
+    container_name: relayer
+    image: omniops/relayer:{{or .OmniTag "main"}}
+    restart: unless-stopped # Restart on crash to mitigate startup race issues
+    ports:
+      - 26660 # Prometheus and pprof
+    volumes:
+      - ./relayer:/relayer
+    networks:
+      {{ $.NetworkName }}:
+        {{ if $.Network }}ipv4_address: 10.186.73.200{{ end }}
+{{end}}
+
+{{- if .Monitor }}
+  monitor:
+    labels:
+      e2e: true
+    container_name: monitor
+    image: omniops/monitor:{{or .OmniTag "main"}}
+    restart: unless-stopped # Restart on crash to mitigate startup race issues
+    ports:
+      - 26660 # Prometheus and pprof
+    volumes:
+      - ./monitor:/monitor
+    networks:
+      {{ $.NetworkName }}:
+        {{ if $.Network }}ipv4_address: 10.186.73.201{{ end }}
+{{ end }}
+
+{{- if .Prometheus }}
+  prometheus:
+    labels:
+      e2e: true
+    container_name: prometheus
+    image: prom/prometheus:latest
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --web.console.libraries=/usr/share/prometheus/console_libraries
+      - --web.console.templates=/usr/share/prometheus/consoles
+      - --enable-feature=exemplar-storage
+      - --enable-feature=agent
+    restart: unless-stopped
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      {{ $.NetworkName }}:
+        {{ if $.Network }}ipv4_address: 10.186.73.202{{ end }}
+{{ end }}

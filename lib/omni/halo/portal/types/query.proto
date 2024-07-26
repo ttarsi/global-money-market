@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package halo.portal.types;
+
+option go_package = "halo/portal/types";
+
+// Query defines the gRPC querier service.
+service Query {
+  rpc Block(BlockRequest) returns (BlockResponse) {}
+}
+
+message BlockRequest {
+  uint64 id     = 1;
+  bool   latest = 2; // If true, id is ignored and the latest block is returned.
+}
+
+message BlockResponse {
+  uint64       id             = 1;
+  uint64       created_height = 2;
+  repeated Msg msgs           = 3;
+}
+
+message Msg {
+  uint64 id            = 1;
+  uint32 type          = 2;
+  uint64 msg_type_id   = 3;
+  uint64 dest_chain_id = 4; // Destination chain ID
+  uint64 shard_id      = 5; // Shard of the message
+  uint64 stream_offset = 6; // Offset of the message in the stream
+}

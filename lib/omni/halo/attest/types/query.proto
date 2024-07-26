@@ -1,0 +1,81 @@
+syntax = "proto3";
+
+package halo.attest.types;
+
+import "halo/attest/types/tx.proto";
+
+option go_package = "halo/attest/types";
+
+// Query defines the gRPC querier service.
+service Query {
+  // AttestationsFrom queries halo for approved attestations for the given chain_id
+  // and from the given height (inclusive). The response will contain at most max attestations sequentially
+  // following from_height.
+  rpc AttestationsFrom(AttestationsFromRequest) returns (AttestationsFromResponse) {}
+
+  // LatestAttestation queries halo for the latest approved attestations for the given chain_id.
+  rpc LatestAttestation(LatestAttestationRequest) returns (LatestAttestationResponse) {}
+
+  // EarliestAttestation queries halo for the earliest approved attestation in consensus chain state for the given chain_id.
+  rpc EarliestAttestation(EarliestAttestationRequest) returns (EarliestAttestationResponse) {}
+
+  // ListAllAttestations queries halo for all approved attestations in consensus chain state for the given chain_id.
+  rpc ListAllAttestations(ListAllAttestationsRequest) returns (ListAllAttestationsResponse) {}
+
+  // WindowCompare compares the given chain height to the vote window.
+  // It returns whether the request is behind (-1), or in (0), or after (1) the vote window.
+  // The vote window is a configured number of blocks around the latest approved attestation.
+  rpc WindowCompare(WindowCompareRequest) returns (WindowCompareResponse) {}
+}
+
+// ApprovedFromRequest queries halo for approved attestations for the given chain_id
+// and from the given height (inclusive). The response will contain at most max attestations sequentially
+// following from_height.
+message AttestationsFromRequest {
+  uint64 chain_id    = 1; // Chain ID as per https://chainlist.org
+  uint32 conf_level  = 2; // Confirmation level of the attestation
+  uint64 from_offset = 3; // XBlock offset to start from (inclusive)
+}
+
+message AttestationsFromResponse{
+  repeated Attestation attestations = 1;
+}
+
+message LatestAttestationRequest {
+  uint64 chain_id   = 1; // Chain ID as per https://chainlist.org
+  uint32 conf_level = 2; // Confirmation level of the attestation
+}
+
+message LatestAttestationResponse {
+  Attestation attestation = 1;
+}
+
+message EarliestAttestationRequest {
+  uint64 chain_id   = 1; // Chain ID as per https://chainlist.org
+  uint32 conf_level = 2; // Confirmation level of the attestation
+}
+
+message EarliestAttestationResponse {
+  Attestation attestation = 1;
+}
+
+message ListAllAttestationsRequest {
+  uint64 chain_id    = 1; // Chain ID as per https://chainlist.org
+  uint32 conf_level  = 2; // Confirmation level of the attestation
+  uint32 status      = 3; // Status of the attestation
+  uint64 from_offset = 4; // XBlock offset to start from (inclusive)
+}
+
+message ListAllAttestationsResponse {
+  repeated Attestation attestations = 1;
+}
+
+message WindowCompareRequest {
+  uint64 chain_id     = 1; // Chain ID as per https://chainlist.org
+  uint32 conf_level   = 2; // Confirmation level of the attestation
+  uint64 block_offset = 3; // Attestation block offset to compare
+}
+
+message WindowCompareResponse {
+  int32 cmp = 1; // Whether the request is behind (-1), or in (0), or after (1) the vote window.
+}

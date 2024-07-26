@@ -1,0 +1,56 @@
+version: '2.4'
+networks:
+  test:
+    labels:
+      e2e: true
+    driver: bridge
+
+services:
+  seed01:
+    labels:
+      e2e: true
+    container_name: seed01
+    image: omniops/halo:7d1ae53
+    init: true
+    ports:
+    - 26656:26656 # Consensus P2P
+    - 26657:26657 # Consensus RPC
+    - 6060 # Pprof
+    volumes:
+    - ./seed01:/halo
+    networks:
+      test:
+        
+
+
+  # Use geth as the omni EVMs.
+  seed01_evm:
+    labels:
+      e2e: true
+    container_name: seed01_evm
+    image: "ethereum/client-go:v1.14.7"
+    command:
+      - --config=/geth/config.toml
+      # Flags not available via config.toml
+      - --nat=extip:127.0.0.4
+      - --pprof
+      - --pprof.addr=0.0.0.0
+      - --metrics
+      - --graphql
+      
+    ports:
+      - 8551:8551 # Auth RPC
+      - 8545:8545 # HTTP RPC
+      - 30303:30303 # Execution P2P
+      - 8546:8546 # Websockets RPC
+      - 6060 # Prometheus metrics and pprof
+    healthcheck:
+      test: "nc -z localhost 8545"
+      interval: 1s
+      retries: 30
+    volumes:
+      - ./seed01_evm:/geth
+    networks:
+      test:
+        
+

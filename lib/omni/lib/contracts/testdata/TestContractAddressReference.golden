@@ -1,0 +1,16 @@
+{
+ "mainnet": {
+  "avs": "0xed2f4d90b073128ae6769a9a8d51547b1df766c8",
+  "create3": "0x9b137463d4e7986d7f535f9b79e28b4ef1938e9b",
+  "l1bridge": "0x1ef02175337fd1b808d95a2e15498e767fe5e87c",
+  "portal": "0x84db9693ba18e77f66a3906aa4544a0d238b6221",
+  "token": "0x36e66fbbce51e4cd5bd3c62b637eb411b18949d4"
+ },
+ "omega": {
+  "avs": "0xa7b2e7830c51728832d33421670dbbe30299fd92",
+  "create3": "0x4bf2e538446b3faa2c439a4f8867a9052db8f1d0",
+  "l1bridge": "0x31a41add05110e92f4f323b8fadafe5eeba3965b",
+  "portal": "0x0eeaa62754a0628c062f45bd7605e57a9d3e3813",
+  "token": "0x764260d0a103692008e48ed60c3b3a017fd8fbae"
+ }
+}

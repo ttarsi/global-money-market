@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package halo.valsync.types;
+
+option go_package = "halo/valsync/types";
+
+// Query defines the gRPC querier service.
+service Query {
+  rpc ValidatorSet(ValidatorSetRequest) returns (ValidatorSetResponse) {}
+}
+
+message ValidatorSetRequest {
+  uint64 id     = 1;
+  bool   latest = 2; // If true, id is ignored and the latest validator set is returned.
+}
+
+message ValidatorSetResponse {
+  uint64             id               = 1;
+  uint64             created_height   = 2;
+  uint64             activated_height = 3;
+  repeated Validator validators       = 4;
+}
+
+message Validator {
+  bytes consensus_pubkey = 1; // 33 byte compressed secp256k1 public key
+  int64 power            = 2;
+}
