@@ -9,8 +9,7 @@ import {IAccountant} from "src/interfaces/IAccountant.sol";
 
 /**
  * @title Depositor
- * @notice A contract for transmitting greetings to the global chain
- * @dev This contract allows users to transmit greetings to a greeter contract deployed on the global chain via cross-chain communication.
+ * @notice This contract lives on Arbitrum, Optimism, and Base. It receives user deposits and sends that data to the Accountant on the Omni EVM.
  */
 contract Depositor is XApp {
     uint64 public constant DEST_TX_GAS_LIMIT = 120_000;
