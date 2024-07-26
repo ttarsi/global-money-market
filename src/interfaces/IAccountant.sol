@@ -2,5 +2,9 @@
 pragma solidity ^0.8.23;
 
 interface IAccountant {
-    function greet(string calldata _greeting) external;
+    event TokenAReceived(address indexed from, uint256 amount);
+    event TokenBReceived(address indexed from, uint256 amount);
+
+    function receiveTokenA(address user, uint256 amount) external;
+    function receiveTokenB(address user, uint256 amount) external;
 }
